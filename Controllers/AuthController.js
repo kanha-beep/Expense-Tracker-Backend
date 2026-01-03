@@ -50,9 +50,11 @@ export const updateUser = async (req, res, next) => {
   res.status(200).json({ message: "User updated successfully", user: user });
 }
 export const logout = (req, res) => {
+  console.log("statrts")
   res.clearCookie("token", {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax"
-  }).status(200).json({ message: "Logout successful" });
+  })
+  res.status(200).json({ message: "Logout successful" });
 }

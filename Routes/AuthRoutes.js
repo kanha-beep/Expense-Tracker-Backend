@@ -6,7 +6,7 @@ import { VerifyAuth } from "../Middlewares/VerifyAuth.js";
 const router = express.Router();
 router.post("/register", WrapAsync(register));
 router.post("/login", WrapAsync(login));
-router.get("/logout",  WrapAsync(logout));
+router.post("/logout",  WrapAsync(logout));
 router.get("/me", VerifyAuth, WrapAsync(currentUser))
 router.patch("/me/edit", VerifyAuth, WrapAsync(updateUser))
 
