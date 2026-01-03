@@ -2,8 +2,10 @@ import ExpressError from "../Middlewares/ExpressError.js";
 import Tracker from "../Models/TrackerSchema.js"
 export const allTxn = async (req, res) => {
   const { category } = req.query || "all"
+  const userId = req?.user?._id
   console.log("category: ", category)
-  const txn = await Tracker.find({});
+  const txn = await Tracker.find({user: userId});
+  console.log("all txns: ", txn)
   const filter = category && category !== "all" ? { category } : {};
   const filtered = txn.filter((t) => {
     if (category === "fruits") return t.category === "fruits";
@@ -38,16 +40,17 @@ export const allTxn = async (req, res) => {
   const limit = 3;
   const skip = Math.max(txn.length - limit, 0);
   // const skip = txn.length - limit;
-  const recent = await Tracker.find(filter).skip(skip).limit(limit)
-  console.log("recent: ", recent)
+  const recent = await Tracker.find({user:userId,...filter}).skip(skip).limit(limit)
+  // console.log("recent: ", recent)
   // console.log("totalIncome: ", totalIncome, "totalExpense: ", totalExpense)
   res.status(200).json({ totalIncome: totalIncome, totalExpense: totalExpense, totalBalance: balance, txn: txn, report, recent });
 }
 
 export const newTxn = async (req, res, next) => {
   const { title, amount, category, type } = req.body;
+  const userId = req?.user?._id
   if (!title || !amount || !category) return next(new ExpressError(400, "All fields are required"));
-  const txn = await Tracker.create({ title, amount, category, type });
+  const txn = await Tracker.create({ title, amount, category, type, user: userId });
   res.status(201).json({ message: "Txn added successfully" });
 }
 

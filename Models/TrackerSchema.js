@@ -6,6 +6,7 @@ const trackerSchema = new mongoose.Schema({
   category: { type: String, required: true },
   date: { type: Date, default: Date.now() },
   type: { type: String, required: true },
-}, {timestamps:true});
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+}, { timestamps: true });
 
 export default mongoose.model("Tracker", trackerSchema);
