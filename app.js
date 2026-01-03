@@ -11,10 +11,13 @@ import AuthRoutes from "./Routes/AuthRoutes.js";
 const app = express();
 connectDB();
 // Middleware
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
-app.use(express.json());
-app.use(cookieParser());
+const allowedOrigins=process.env.CLIENT_URL.split(",")
+console.log(allowedOrigins)
+app.set("trust proxy", 1);
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
+app.use(cookieParser());
+app.use(express.json());
 // Routes
 app.use("/api/tracker", TrackerRoutes);
 app.use("/api/auth", AuthRoutes);

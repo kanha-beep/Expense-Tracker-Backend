@@ -1,7 +1,9 @@
 import ExpressError from "../Middlewares/ExpressError.js";
 import User from "../Models/UsersSchema.js";
 import jwt from 'jsonwebtoken';
-
+const genToken = (user) => {
+  return jwt.sign({ _id: user._id, name: user.name, email: user.email, roles: user.roles }, process.env.JWT_SECRET, { expiresIn: "30d" });
+};
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) return next(new ExpressError(400, "All fields are required"));
@@ -9,23 +11,20 @@ export const register = async (req, res, next) => {
   if (existingUser) return next(new ExpressError(400, "User already registered"));
   const user = await User.create({ name, email, password })
   const token = genToken(user);
-  res.status(201).json({ message: "User registered successfully", user: { name, email }, token });
+  res.cookie("token", token, { httpOnly: true, secure: isProd, sameSite: isProd ? "none" : "lax" }).status(201).json({ message: "User registered successfully", user: { name, email } });
 }
-const genToken = (user) => {
-  return jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-};
+const isProd = process.env.NODE === "production";
 export const login = async (req, res, next) => {
+  console.log("login");
   const { email, password } = req.body;
   if (!email || !password) return next(new ExpressError(400, "Email and password are required"));
   const existingUser = await User.findOne({ email });
-  if (!existingUser) return next(new ExpressError(400, "Please first register"));
+  if (!existingUser) return next(new ExpressError(401, "Please first register"));
   const isPasswordValid = await existingUser.comparePassword(password);
-  if (!isPasswordValid) return next(new ExpressError(400, "Invalid password"));
+  if (!isPasswordValid) return next(new ExpressError(402, "Invalid password"));
   const token = genToken(existingUser);
-  res.cookie("token", token, { httpOnly: true, secure: false, sameSite: "lax" });
-  res.status(200).json({
+  res.cookie("token", token, { httpOnly: true, secure: isProd, sameSite: isProd ? "none" : "lax" }).status(200).json({
     message: "Login successful",
-    token,
     user: {
       _id: existingUser._id,
       name: existingUser.name,
